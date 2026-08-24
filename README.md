@@ -96,7 +96,3 @@ At shutdown, the module logs out and saves its roster bots before the server clo
 Logging out all custom bots...
 >> 1 custom bots logged out
 ```
-
-## Shared authserver / multiple realms
-
-For a sandbox realm sharing an existing authserver, give the sandbox a unique `RealmID`, unique `WorldServerPort`, and a separate characters database. Add a matching row with the same ID and worldserver address/port to the shared auth database's `realmlist` table. The sandbox `LoginDatabaseInfo` must point to that same shared auth database.
