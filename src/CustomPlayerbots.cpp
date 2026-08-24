@@ -158,7 +158,8 @@ bool Create(ChatHandler* handler, CustomPlayerbotRequest const& request)
     bot->SetAtLoginFlag(AT_LOGIN_NONE);
     bot->SaveToDB(true, false);
     sCharacterCache->AddCharacterCacheEntry(bot->GetGUID(), request.accountId, bot->GetName(), bot->getGender(), bot->getRace(), bot->getClass(), bot->GetLevel());
-    CharacterDatabase.Execute("REPLACE INTO custom_playerbots (guid, account_id, autologin, autonomous) VALUES ({}, {}, {}, 1)", bot->GetGUID().GetCounter(), request.accountId, request.autologin ? 1 : 0);
+    bool autonomous = sConfigMgr->GetOption<bool>("CustomPlayerbots.AutonomousByDefault", true);
+    CharacterDatabase.Execute("REPLACE INTO custom_playerbots (guid, account_id, autologin, autonomous) VALUES ({}, {}, {}, {})", bot->GetGUID().GetCounter(), request.accountId, request.autologin ? 1 : 0, autonomous ? 1 : 0);
     ObjectGuid guid = bot->GetGUID();
     bot->CleanupsBeforeDelete();
     handler->PSendSysMessage("Custom playerbot {} created (guid {}).", request.name, guid.GetCounter());
@@ -181,7 +182,8 @@ bool Register(ChatHandler* handler, std::string const& name, bool autologin)
 
     // The next admin command may be `.custombot login`, which immediately
     // reads the roster. Commit this one-row registration before confirming it.
-    CharacterDatabase.DirectExecute("INSERT INTO custom_playerbots (guid, account_id, autologin, autonomous) VALUES ({}, {}, {}, 1)", guid->GetCounter(), accountId, autologin ? 1 : 0);
+    bool autonomous = sConfigMgr->GetOption<bool>("CustomPlayerbots.AutonomousByDefault", true);
+    CharacterDatabase.DirectExecute("INSERT INTO custom_playerbots (guid, account_id, autologin, autonomous) VALUES ({}, {}, {}, {})", guid->GetCounter(), accountId, autologin ? 1 : 0, autonomous ? 1 : 0);
     handler->PSendSysMessage("{} registered as a custom playerbot; autologin {}.", name, autologin ? "enabled" : "disabled");
     return true;
 }

@@ -45,6 +45,9 @@ CustomPlayerbots.AutoLoginDelayMs = 15000
 
 # Number of login requests issued per world tick after the delay.
 CustomPlayerbots.AutoLoginBatchSize = 5
+
+# Whether newly created and registered bots start autonomous questing.
+CustomPlayerbots.AutonomousByDefault = 1
 ```
 
 ## Create a dedicated account
@@ -84,7 +87,7 @@ If appearance fields are omitted, the module selects valid values from the clien
 
 `register` adds an existing character to the custom roster without changing its identity or progress. It rejects characters on Rndbot accounts. `unregister` logs a bot out and removes only its custom-roster entry; it never deletes the underlying character.
 
-Newly created and registered bots have `autonomous` enabled by default. When enabled, the bot receives Playerbots' non-combat `new rpg` and `grind` strategies and has `follow` removed whenever it logs in. It will then independently seek level-appropriate quests and targets while preserving its own character identity and progress. The module reasserts this behavior when an autonomous bot is no longer in a group, preventing Playerbots from restoring its follow behavior. Disable it to restore ordinary companion behavior; a currently logged-in bot changes behavior immediately. Use `autonomous all on|off` to change the entire roster at once.
+`CustomPlayerbots.AutonomousByDefault` controls whether newly created and registered bots have `autonomous` enabled; it defaults to `1`. Existing bots retain their stored setting. When enabled, the bot receives Playerbots' non-combat `new rpg` and `grind` strategies and has `follow` removed whenever it logs in. It will then independently seek level-appropriate quests and targets while preserving its own character identity and progress. The module reasserts this behavior when an autonomous bot is no longer in a group, preventing Playerbots from restoring its follow behavior. Disable it to restore ordinary companion behavior; a currently logged-in bot changes behavior immediately. Use `autonomous all on|off` to change the entire roster at once.
 
 ## Startup and shutdown
 

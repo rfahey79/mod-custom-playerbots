@@ -8,3 +8,8 @@ CustomPlayerbots.AutoLoginDelayMs = 15000
 
 # Maximum roster bots whose login is started in a single world tick.
 CustomPlayerbots.AutoLoginBatchSize = 5
+
+# Enable autonomous questing for newly created and registered custom bots.
+# Existing bots retain their stored setting; use `.custombot autonomous all on|off`
+# to change an existing roster.
+CustomPlayerbots.AutonomousByDefault = 1
