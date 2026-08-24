@@ -151,7 +151,9 @@ bool Register(ChatHandler* handler, std::string const& name, bool autologin)
         return false;
     }
 
-    CharacterDatabase.Execute("INSERT INTO custom_playerbots (guid, account_id, autologin) VALUES ({}, {}, {})", guid->GetCounter(), accountId, autologin ? 1 : 0);
+    // The next admin command may be `.custombot login`, which immediately
+    // reads the roster. Commit this one-row registration before confirming it.
+    CharacterDatabase.DirectExecute("INSERT INTO custom_playerbots (guid, account_id, autologin) VALUES ({}, {}, {})", guid->GetCounter(), accountId, autologin ? 1 : 0);
     handler->PSendSysMessage("{} registered as a custom playerbot; autologin {}.", name, autologin ? "enabled" : "disabled");
     return true;
 }
