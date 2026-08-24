@@ -31,6 +31,7 @@ class ChatHandler;
 namespace CustomPlayerbots
 {
 bool Create(ChatHandler* handler, CustomPlayerbotRequest const& request);
+bool Register(ChatHandler* handler, std::string const& name, bool autologin);
 bool SetAutologin(ChatHandler* handler, std::string const& name, bool enabled);
 bool Unregister(ChatHandler* handler, std::string const& name);
 bool Login(ChatHandler* handler, std::string const& name);

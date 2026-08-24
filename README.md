@@ -57,6 +57,7 @@ account create CustomBots01 YourStrongPassword
 
 ```text
 .custombot create Name Race Gender Class Level Account AutoLogin [skin=N face=N hairstyle=N haircolor=N facialhair=N]
+.custombot register Name AutoLogin
 .custombot list
 .custombot login Name
 .custombot logout Name
@@ -71,11 +72,12 @@ Examples:
 ```text
 .custombot create Aldric human male warrior 80 CustomBots01 on
 .custombot create Elowen nightelf female druid 60 CustomBots01 on skin=4 face=2 hairstyle=5 haircolor=3 facialhair=0
+.custombot register ExistingCharacter on
 ```
 
 If appearance fields are omitted, the module selects valid values from the client's `CharSections.dbc`. Supplied skin/face, hairstyle/hair-color, and facial-hair values are checked against the selected race and gender before the character is created.
 
-`unregister` logs a bot out and removes only its custom-roster entry; it never deletes the underlying character.
+`register` adds an existing character to the custom roster without changing its identity or progress. It rejects characters on Rndbot accounts. `unregister` logs a bot out and removes only its custom-roster entry; it never deletes the underlying character.
 
 ## Startup and shutdown
 

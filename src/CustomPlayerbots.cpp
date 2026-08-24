@@ -11,6 +11,7 @@
 #include "ObjectMgr.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
+#include "PlayerbotAIConfig.h"
 #include "PlayerbotMgr.h"
 #include "RandomPlayerbotMgr.h"
 #include "World.h"
@@ -82,13 +83,22 @@ bool SelectAppearance(uint8 race, uint8 gender, CustomPlayerbotAppearance const&
     return true;
 }
 
-std::optional<ObjectGuid> FindGuid(std::string const& name)
+std::optional<ObjectGuid> FindAnyGuid(std::string const& name)
 {
     ObjectGuid guid = sCharacterCache->GetCharacterGuidByName(name);
-    if (guid.IsEmpty())
-        return std::nullopt;
+    return guid.IsEmpty() ? std::nullopt : std::optional<ObjectGuid>(guid);
+}
+
+bool IsRegistered(ObjectGuid guid)
+{
     QueryResult roster = CharacterDatabase.Query("SELECT 1 FROM custom_playerbots WHERE guid = {}", guid.GetCounter());
-    return roster ? std::optional<ObjectGuid>(guid) : std::nullopt;
+    return bool(roster);
+}
+
+std::optional<ObjectGuid> FindGuid(std::string const& name)
+{
+    auto guid = FindAnyGuid(name);
+    return guid && IsRegistered(*guid) ? guid : std::nullopt;
 }
 }
 
@@ -124,6 +134,25 @@ bool Create(ChatHandler* handler, CustomPlayerbotRequest const& request)
     ObjectGuid guid = bot->GetGUID();
     bot->CleanupsBeforeDelete();
     handler->PSendSysMessage("Custom playerbot {} created (guid {}).", request.name, guid.GetCounter());
+    return true;
+}
+
+bool Register(ChatHandler* handler, std::string const& name, bool autologin)
+{
+    auto guid = FindAnyGuid(name);
+    if (!guid) { handler->PSendSysMessage("Character not found."); return false; }
+    if (IsRegistered(*guid)) { handler->PSendSysMessage("{} is already registered as a custom playerbot.", name); return false; }
+
+    uint32 accountId = sCharacterCache->GetCharacterAccountIdByGuid(*guid);
+    if (!accountId) { handler->PSendSysMessage("Could not determine the character account."); return false; }
+    if (sPlayerbotAIConfig.IsInRandomAccountList(accountId))
+    {
+        handler->PSendSysMessage("{} belongs to a Rndbot account and cannot be registered as a persistent custom playerbot.", name);
+        return false;
+    }
+
+    CharacterDatabase.Execute("INSERT INTO custom_playerbots (guid, account_id, autologin) VALUES ({}, {}, {})", guid->GetCounter(), accountId, autologin ? 1 : 0);
+    handler->PSendSysMessage("{} registered as a custom playerbot; autologin {}.", name, autologin ? "enabled" : "disabled");
     return true;
 }
 
