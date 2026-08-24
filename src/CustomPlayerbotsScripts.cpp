@@ -12,6 +12,8 @@
 
 namespace
 {
+using namespace Acore::ChatCommands;
+
 bool ParseUInt(std::string const& text, uint8& value) { unsigned n; auto [p, e] = std::from_chars(text.data(), text.data()+text.size(), n); if (e != std::errc() || p != text.data()+text.size() || n > 255) return false; value = uint8(n); return true; }
 bool ParseBool(std::string const& text, bool& value) { if (text == "1" || text == "true" || text == "yes" || text == "on") { value = true; return true; } if (text == "0" || text == "false" || text == "no" || text == "off") { value = false; return true; } return false; }
 uint8 Race(std::string s) { static std::map<std::string,uint8> const v={{"human",1},{"orc",2},{"dwarf",3},{"nightelf",4},{"undead",5},{"tauren",6},{"gnome",7},{"troll",8},{"bloodelf",10},{"draenei",11}}; for(char& c:s)c=tolower(c); uint8 n; return ParseUInt(s,n)?n:(v.count(s)?v.at(s):0); }
