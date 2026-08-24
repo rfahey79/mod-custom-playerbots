@@ -168,14 +168,28 @@ void List(ChatHandler* handler)
 
 void QueueStartupLogins()
 {
-    if (!sConfigMgr->GetOption<bool>("CustomPlayerbots.Enable", true)) return;
+    if (!sConfigMgr->GetOption<bool>("CustomPlayerbots.Enable", true))
+    {
+        LOG_INFO("server.loading", "mod-custom-playerbots is disabled in mod_custom_playerbots.conf");
+        return;
+    }
+
+    LOG_INFO("server.loading", "---------------------------------------");
+    LOG_INFO("server.loading", " Initializing mod-custom-playerbots ");
+    LOG_INFO("server.loading", " Loading persistent custom playerbot roster...");
+    LOG_INFO("server.loading", "---------------------------------------");
+
     startupTimer = sConfigMgr->GetOption<uint32>("CustomPlayerbots.AutoLoginDelayMs", 15000);
     QueryResult rows = CharacterDatabase.Query("SELECT guid FROM custom_playerbots WHERE autologin = 1");
-    if (!rows) return;
+    if (!rows)
+    {
+        LOG_INFO("server.loading", ">> No persistent custom playerbots are enabled for autologin");
+        return;
+    }
     do { startupQueue.emplace_back(HighGuid::Player, rows->Fetch()[0].Get<uint32>()); } while (rows->NextRow());
     startupTotal = startupQueue.size();
     startupLogged = 0;
-    LOG_INFO("module.custom_playerbots", "Queued {} persistent custom playerbots for autologin.", startupQueue.size());
+    LOG_INFO("server.loading", ">> {} persistent custom playerbots queued for autologin", startupQueue.size());
 }
 
 void Update(uint32 diff)
