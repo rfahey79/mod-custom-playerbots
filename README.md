@@ -20,12 +20,6 @@ mysql <characters_database> < modules/mod-custom-playerbots/data/sql/db-characte
 ./acore.sh compiler build
 ```
 
-For a local MySQL installation with no password and a characters database named `custpb_characters`:
-
-```bash
-mysql custpb_characters < modules/mod-custom-playerbots/data/sql/db-characters/base/custom_playerbots.sql
-```
-
 Copy `modules/mod-custom-playerbots/conf/mod_custom_playerbots.conf.dist` into the worldserver configuration directory and remove `.dist` from its name. The exact directory depends on the installation, but is commonly `env/dist/etc/`.
 
 Ensure Playerbots is enabled in `playerbots.conf`:
