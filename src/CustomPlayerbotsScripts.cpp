@@ -31,16 +31,17 @@ public: custom_playerbots_commands() : CommandScript("custom_playerbots_commands
     static bool HandleCreate(ChatHandler* h, std::string_view args)
     {
         std::istringstream in{std::string(args)}; std::string race, gender, cls, level, account, autoLogin, token; CustomPlayerbotRequest r;
-        if (!(in >> r.name >> race >> gender >> cls >> level >> account >> autoLogin) || !ParseUInt(level, r.level)) { h->PSendSysMessage("Syntax: .custombot create Name Race Gender Class Level Account AutoLogin [skin=N face=N hairstyle=N haircolor=N facialhair=N]"); return false; }
-        r.race=Race(race); r.gender=Gender(gender); r.playerClass=Class(cls); if (!ParseBool(autoLogin,r.autologin)) { h->PSendSysMessage("AutoLogin must be 0/1, true/false, or yes/no."); return false; } r.accountId=AccountMgr::GetId(account);
-        while(in >> token) { auto at=token.find('='); if(at==std::string::npos) { h->PSendSysMessage("Appearance options use key=value."); return false; } uint8 n; if(!ParseUInt(token.substr(at+1),n)){h->PSendSysMessage("Appearance values must be 0-255.");return false;} auto key=token.substr(0,at); if(key=="skin")r.appearance.skinColor=n; else if(key=="face")r.appearance.face=n; else if(key=="hairstyle")r.appearance.hairStyle=n; else if(key=="haircolor")r.appearance.hairColor=n; else if(key=="facialhair")r.appearance.facialHair=n; else {h->PSendSysMessage("Supported appearance keys: skin, face, hairstyle, haircolor, facialhair.");return false;} }
-        return CustomPlayerbots::Create(h,r);
+        if (!(in >> r.name >> race >> gender >> cls >> level >> account >> autoLogin) || !ParseUInt(level, r.level)) { h->PSendSysMessage("Syntax: .custombot create Name Race Gender Class Level Account AutoLogin [skin=N face=N hairstyle=N haircolor=N facialhair=N]"); return true; }
+        r.race=Race(race); r.gender=Gender(gender); r.playerClass=Class(cls); if (!ParseBool(autoLogin,r.autologin)) { h->PSendSysMessage("AutoLogin must be 0/1, true/false, yes/no, or on/off."); return true; } r.accountId=AccountMgr::GetId(account);
+        while(in >> token) { auto at=token.find('='); if(at==std::string::npos) { h->PSendSysMessage("Appearance options use key=value."); return true; } uint8 n; if(!ParseUInt(token.substr(at+1),n)){h->PSendSysMessage("Appearance values must be 0-255.");return true;} auto key=token.substr(0,at); if(key=="skin")r.appearance.skinColor=n; else if(key=="face")r.appearance.face=n; else if(key=="hairstyle")r.appearance.hairStyle=n; else if(key=="haircolor")r.appearance.hairColor=n; else if(key=="facialhair")r.appearance.facialHair=n; else {h->PSendSysMessage("Supported appearance keys: skin, face, hairstyle, haircolor, facialhair.");return true;} }
+        CustomPlayerbots::Create(h,r);
+        return true;
     }
     static bool HandleList(ChatHandler* h, std::string_view) { CustomPlayerbots::List(h); return true; }
-    static bool HandleLogin(ChatHandler* h, std::string_view a) { return CustomPlayerbots::Login(h,std::string(a)); }
-    static bool HandleLogout(ChatHandler* h, std::string_view a) { return CustomPlayerbots::Logout(h,std::string(a)); }
-    static bool HandleUnregister(ChatHandler* h, std::string_view a) { return CustomPlayerbots::Unregister(h,std::string(a)); }
-    static bool HandleAutologin(ChatHandler* h, std::string_view a) { std::istringstream in{std::string(a)};std::string n,v;if(!(in>>n>>v)){h->PSendSysMessage("Syntax: .custombot autologin Name on|off");return false;}bool b;if(!ParseBool(v,b)){h->PSendSysMessage("Use on or off.");return false;}return CustomPlayerbots::SetAutologin(h,n,b); }
+    static bool HandleLogin(ChatHandler* h, std::string_view a) { CustomPlayerbots::Login(h,std::string(a)); return true; }
+    static bool HandleLogout(ChatHandler* h, std::string_view a) { CustomPlayerbots::Logout(h,std::string(a)); return true; }
+    static bool HandleUnregister(ChatHandler* h, std::string_view a) { CustomPlayerbots::Unregister(h,std::string(a)); return true; }
+    static bool HandleAutologin(ChatHandler* h, std::string_view a) { std::istringstream in{std::string(a)};std::string n,v;if(!(in>>n>>v)){h->PSendSysMessage("Syntax: .custombot autologin Name on|off");return true;}bool b;if(!ParseBool(v,b)){h->PSendSysMessage("Use on or off.");return true;}CustomPlayerbots::SetAutologin(h,n,b);return true; }
 };
 class custom_playerbots_world : public WorldScript { public: custom_playerbots_world() : WorldScript("custom_playerbots_world") {} void OnStartup() override { CustomPlayerbots::QueueStartupLogins(); } void OnUpdate(uint32 diff) override { CustomPlayerbots::Update(diff); } };
 }
