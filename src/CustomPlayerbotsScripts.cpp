@@ -25,7 +25,7 @@ class custom_playerbots_commands : public CommandScript
 public: custom_playerbots_commands() : CommandScript("custom_playerbots_commands") {}
     ChatCommandTable GetCommands() const override
     {
-        static ChatCommandTable bot = {{"create", HandleCreate, rbac::RBAC_PERM_COMMAND_GM, Console::Yes}, {"register", HandleRegister, rbac::RBAC_PERM_COMMAND_GM, Console::Yes}, {"list", HandleList, rbac::RBAC_PERM_COMMAND_GM, Console::Yes}, {"login", HandleLogin, rbac::RBAC_PERM_COMMAND_GM, Console::Yes}, {"logout", HandleLogout, rbac::RBAC_PERM_COMMAND_GM, Console::Yes}, {"autologin", HandleAutologin, rbac::RBAC_PERM_COMMAND_GM, Console::Yes}, {"unregister", HandleUnregister, rbac::RBAC_PERM_COMMAND_GM, Console::Yes}};
+        static ChatCommandTable bot = {{"create", HandleCreate, rbac::RBAC_PERM_COMMAND_GM, Console::Yes}, {"register", HandleRegister, rbac::RBAC_PERM_COMMAND_GM, Console::Yes}, {"list", HandleList, rbac::RBAC_PERM_COMMAND_GM, Console::Yes}, {"login", HandleLogin, rbac::RBAC_PERM_COMMAND_GM, Console::Yes}, {"logout", HandleLogout, rbac::RBAC_PERM_COMMAND_GM, Console::Yes}, {"autologin", HandleAutologin, rbac::RBAC_PERM_COMMAND_GM, Console::Yes}, {"autonomous", HandleAutonomous, rbac::RBAC_PERM_COMMAND_GM, Console::Yes}, {"unregister", HandleUnregister, rbac::RBAC_PERM_COMMAND_GM, Console::Yes}};
         return {{"custombot", bot}};
     }
     static bool HandleCreate(ChatHandler* h, char const* args)
@@ -43,6 +43,7 @@ public: custom_playerbots_commands() : CommandScript("custom_playerbots_commands
     static bool HandleLogout(ChatHandler* h, char const* a) { CustomPlayerbots::Logout(h, a); return true; }
     static bool HandleUnregister(ChatHandler* h, char const* a) { CustomPlayerbots::Unregister(h, a); return true; }
     static bool HandleAutologin(ChatHandler* h, char const* a) { std::istringstream in{a};std::string n,v;if(!(in>>n>>v)){h->PSendSysMessage("Syntax: .custombot autologin Name on|off");return true;}bool b;if(!ParseBool(v,b)){h->PSendSysMessage("Use on or off.");return true;}CustomPlayerbots::SetAutologin(h,n,b);return true; }
+    static bool HandleAutonomous(ChatHandler* h, char const* a) { std::istringstream in{a};std::string n,v;if(!(in>>n>>v)){h->PSendSysMessage("Syntax: .custombot autonomous Name on|off");return true;}bool b;if(!ParseBool(v,b)){h->PSendSysMessage("Use on or off.");return true;}CustomPlayerbots::SetAutonomous(h,n,b);return true; }
 };
 class custom_playerbots_world : public WorldScript { public: custom_playerbots_world() : WorldScript("custom_playerbots_world") {} void OnStartup() override { CustomPlayerbots::QueueStartupLogins(); } void OnUpdate(uint32 diff) override { CustomPlayerbots::Update(diff); } void OnShutdown() override { CustomPlayerbots::LogoutAllForShutdown(); } };
 }

@@ -22,6 +22,8 @@ mysql <characters_database> < modules/mod-custom-playerbots/data/sql/db-characte
 ./acore.sh compiler build
 ```
 
+When updating an existing installation, apply `data/sql/db-characters/updates/2026_08_24_00_custom_playerbots_autonomous.sql` to the same characters database once before starting the updated server.
+
 Copy `modules/mod-custom-playerbots/conf/mod_custom_playerbots.conf.dist` into the worldserver configuration directory and remove `.dist` from its name. The exact directory depends on the installation, but is commonly `env/dist/etc/`.
 
 Ensure Playerbots is enabled in `playerbots.conf`:
@@ -62,6 +64,7 @@ account create CustomBots01 YourStrongPassword
 .custombot login Name
 .custombot logout Name
 .custombot autologin Name on|off
+.custombot autonomous Name on|off
 .custombot unregister Name
 ```
 
@@ -73,11 +76,14 @@ Examples:
 .custombot create Aldric human male warrior 80 CustomBots01 on
 .custombot create Elowen nightelf female druid 60 CustomBots01 on skin=4 face=2 hairstyle=5 haircolor=3 facialhair=0
 .custombot register ExistingCharacter on
+.custombot autonomous Aldric on
 ```
 
 If appearance fields are omitted, the module selects valid values from the client's `CharSections.dbc`. Supplied skin/face, hairstyle/hair-color, and facial-hair values are checked against the selected race and gender before the character is created.
 
 `register` adds an existing character to the custom roster without changing its identity or progress. It rejects characters on Rndbot accounts. `unregister` logs a bot out and removes only its custom-roster entry; it never deletes the underlying character.
+
+`autonomous` is off by default. When enabled, the bot receives Playerbots' non-combat `new rpg` and `grind` strategies and has `follow` removed whenever it logs in. It will then independently seek level-appropriate quests and targets while preserving its own character identity and progress. Disable it to restore ordinary companion behavior; a currently logged-in bot changes behavior immediately.
 
 ## Startup and shutdown
 
