@@ -20,12 +20,16 @@
 #include <deque>
 #include <memory>
 #include <set>
+#include <unordered_set>
 
 namespace
 {
 struct Appearance { uint8 skin; uint8 face; uint8 hairStyle; uint8 hairColor; uint8 facialHair; };
 std::deque<ObjectGuid> startupQueue;
+std::unordered_set<ObjectGuid> startupPending;
 uint32 startupTimer = 0;
+uint32 startupTotal = 0;
+uint32 startupLogged = 0;
 
 bool ValidRaceClass(uint8 race, uint8 playerClass)
 {
@@ -169,15 +173,36 @@ void QueueStartupLogins()
     QueryResult rows = CharacterDatabase.Query("SELECT guid FROM custom_playerbots WHERE autologin = 1");
     if (!rows) return;
     do { startupQueue.emplace_back(HighGuid::Player, rows->Fetch()[0].Get<uint32>()); } while (rows->NextRow());
+    startupTotal = startupQueue.size();
+    startupLogged = 0;
     LOG_INFO("module.custom_playerbots", "Queued {} persistent custom playerbots for autologin.", startupQueue.size());
 }
 
 void Update(uint32 diff)
 {
+    for (auto it = startupPending.begin(); it != startupPending.end();)
+    {
+        if (sRandomPlayerbotMgr.GetPlayerBot(*it))
+        {
+            std::string name;
+            sCharacterCache->GetCharacterNameByGuid(*it, name);
+            LOG_INFO("module.custom_playerbots", "{}/{} custom bot {} logged in.", ++startupLogged, startupTotal, name);
+            it = startupPending.erase(it);
+        }
+        else
+            ++it;
+    }
+
     if (startupQueue.empty()) return;
     if (startupTimer > diff) { startupTimer -= diff; return; }
     startupTimer = 0;
     uint32 batch = sConfigMgr->GetOption<uint32>("CustomPlayerbots.AutoLoginBatchSize", 5);
-    while (batch-- && !startupQueue.empty()) { sRandomPlayerbotMgr.AddPlayerBot(startupQueue.front(), 0); startupQueue.pop_front(); }
+    while (batch-- && !startupQueue.empty())
+    {
+        ObjectGuid guid = startupQueue.front();
+        sRandomPlayerbotMgr.AddPlayerBot(guid, 0);
+        startupPending.insert(guid);
+        startupQueue.pop_front();
+    }
 }
 }
