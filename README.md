@@ -1,14 +1,61 @@
 # mod-custom-playerbots
 
-Persistent, named Playerbot Altbots for the Playerbot-compatible AzerothCore branch.  This module uses Playerbots' normal `AddPlayerBot(guid, 0)` login path but maintains its own roster in `characters.custom_playerbots`; it never writes to Rndbot account tables or assigns the random-account prefix.
+`mod-custom-playerbots` adds a small, persistent roster layer to the Playerbot-compatible AzerothCore server. Create named bots with a chosen race, class, level, and optional appearance; keep them on ordinary dedicated accounts; and have selected bots automatically log in whenever the worldserver starts.
 
-## Install
+Custom bots are **not Rndbots**. The module never adds their accounts to the random-bot account pool and never asks Playerbots to randomize their identity. Their name, race, gender, appearance, level, inventory, and normal character progress remain persistent.
 
-1. Use the Playerbot-compatible AzerothCore core and install `mod-playerbots` first.
-2. Copy this folder to `<azerothcore>/modules/mod-custom-playerbots`.
-3. Import `data/sql/db-characters/base/custom_playerbots.sql` into the characters database.
-4. Copy `conf/mod_custom_playerbots.conf.dist` to the worldserver config directory, removing `.dist`.
-5. Re-run CMake, build `worldserver`, then restart it.
+## Requirements
+
+- A Playerbot-compatible AzerothCore core with `mod-playerbots` working.
+- MySQL or MariaDB access to the realm's **characters** database.
+- A GM account for the `.custombot` commands.
+
+## Installation
+
+From the root of the Playerbot-compatible AzerothCore checkout:
+
+```bash
+git clone https://github.com/rfahey79/mod-custom-playerbots.git modules/mod-custom-playerbots
+mysql <characters_database> < modules/mod-custom-playerbots/data/sql/db-characters/base/custom_playerbots.sql
+./acore.sh compiler build
+```
+
+For a local MySQL installation with no password and a characters database named `custpb_characters`:
+
+```bash
+mysql custpb_characters < modules/mod-custom-playerbots/data/sql/db-characters/base/custom_playerbots.sql
+```
+
+Copy `modules/mod-custom-playerbots/conf/mod_custom_playerbots.conf.dist` into the worldserver configuration directory and remove `.dist` from its name. The exact directory depends on the installation, but is commonly `env/dist/etc/`.
+
+Ensure Playerbots is enabled in `playerbots.conf`:
+
+```ini
+AiPlayerbot.Enabled = 1
+```
+
+Restart `worldserver` after compiling and configuring. No change to `AiPlayerbot.RandomBotAccountPrefix` is required.
+
+## Configuration
+
+```ini
+# Enable this module.
+CustomPlayerbots.Enable = 1
+
+# Wait for the server to settle before requesting custom-bot logins.
+CustomPlayerbots.AutoLoginDelayMs = 15000
+
+# Number of login requests issued per world tick after the delay.
+CustomPlayerbots.AutoLoginBatchSize = 5
+```
+
+## Create a dedicated account
+
+Use a normal account for custom bots. Do not use an account whose name matches the Rndbot account prefix, and do not add it to Playerbots' random-account settings. Create it from the worldserver console or as a GM:
+
+```text
+account create RydawgBots01 YourStrongPassword
+```
 
 ## Admin commands
 
@@ -21,17 +68,39 @@ Persistent, named Playerbot Altbots for the Playerbot-compatible AzerothCore bra
 .custombot unregister Name
 ```
 
-Race, gender, and class accept their normal names (for example `human female mage`) or WotLK IDs. `Account` is the existing dedicated account name; it is never created or marked as a Rndbot account. `AutoLogin` accepts `on/off`, `true/false`, `yes/no`, or `1/0`.
+`Race`, `Gender`, and `Class` accept readable WotLK names or their numeric IDs. `AutoLogin` accepts `on/off`, `true/false`, `yes/no`, or `1/0`.
 
-Example:
+Examples:
 
 ```text
 .custombot create Rydawg human male warrior 80 RydawgBots01 on
 .custombot create Kira nightelf female druid 60 RydawgBots01 on skin=4 face=2 hairstyle=5 haircolor=3 facialhair=0
 ```
 
-When any appearance field is absent, the module selects a valid matching value from `CharSections.dbc`. A supplied face/skin or hairstyle/haircolor combination is rejected unless that exact combination is valid for the selected race and gender. `facialhair` is likewise validated against the client catalog.
+If appearance fields are omitted, the module selects valid values from the client's `CharSections.dbc`. Supplied skin/face, hairstyle/hair-color, and facial-hair values are checked against the selected race and gender before the character is created.
 
-The module queues autologin characters after `CustomPlayerbots.AutoLoginDelayMs` and starts them in small batches. It deliberately does not invoke randomization, so names, race, gender, appearance, and level remain persistent.
+`unregister` logs a bot out and removes only its custom-roster entry; it never deletes the underlying character.
 
-`unregister` logs a custom bot out and removes only its roster entry; it never deletes the character.
+## Startup and shutdown
+
+At startup, the worldserver reports a compact roster section:
+
+```text
+---------------------------------------
+ Initializing mod-custom-playerbots
+ Loading persistent custom playerbot roster...
+---------------------------------------
+>> 1 persistent custom playerbots queued for autologin
+1/1 custom bot Rydawg logged in.
+```
+
+At shutdown, the module logs out and saves its roster bots before the server closes:
+
+```text
+Logging out all custom bots...
+>> 1 custom bots logged out
+```
+
+## Shared authserver / multiple realms
+
+For a sandbox realm sharing an existing authserver, give the sandbox a unique `RealmID`, unique `WorldServerPort`, and a separate characters database. Add a matching row with the same ID and worldserver address/port to the shared auth database's `realmlist` table. The sandbox `LoginDatabaseInfo` must point to that same shared auth database.
