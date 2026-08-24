@@ -43,6 +43,6 @@ public: custom_playerbots_commands() : CommandScript("custom_playerbots_commands
     static bool HandleUnregister(ChatHandler* h, char const* a) { CustomPlayerbots::Unregister(h, a); return true; }
     static bool HandleAutologin(ChatHandler* h, char const* a) { std::istringstream in{a};std::string n,v;if(!(in>>n>>v)){h->PSendSysMessage("Syntax: .custombot autologin Name on|off");return true;}bool b;if(!ParseBool(v,b)){h->PSendSysMessage("Use on or off.");return true;}CustomPlayerbots::SetAutologin(h,n,b);return true; }
 };
-class custom_playerbots_world : public WorldScript { public: custom_playerbots_world() : WorldScript("custom_playerbots_world") {} void OnStartup() override { CustomPlayerbots::QueueStartupLogins(); } void OnUpdate(uint32 diff) override { CustomPlayerbots::Update(diff); } };
+class custom_playerbots_world : public WorldScript { public: custom_playerbots_world() : WorldScript("custom_playerbots_world") {} void OnStartup() override { CustomPlayerbots::QueueStartupLogins(); } void OnUpdate(uint32 diff) override { CustomPlayerbots::Update(diff); } void OnShutdown() override { CustomPlayerbots::LogoutAllForShutdown(); } };
 }
 void AddSC_mod_custom_playerbots() { new custom_playerbots_commands(); new custom_playerbots_world(); }

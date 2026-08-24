@@ -219,4 +219,26 @@ void Update(uint32 diff)
         startupQueue.pop_front();
     }
 }
+
+void LogoutAllForShutdown()
+{
+    LOG_INFO("server.loading", "Logging out all custom bots...");
+
+    QueryResult rows = CharacterDatabase.Query("SELECT guid FROM custom_playerbots");
+    if (!rows)
+        return;
+
+    uint32 loggedOut = 0;
+    do
+    {
+        ObjectGuid guid(HighGuid::Player, rows->Fetch()[0].Get<uint32>());
+        if (Player* bot = sRandomPlayerbotMgr.GetPlayerBot(guid))
+        {
+            sRandomPlayerbotMgr.LogoutPlayerBot(bot->GetGUID());
+            ++loggedOut;
+        }
+    } while (rows->NextRow());
+
+    LOG_INFO("server.loading", ">> {} custom bots logged out", loggedOut);
+}
 }

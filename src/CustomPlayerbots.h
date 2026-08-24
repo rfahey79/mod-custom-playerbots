@@ -38,4 +38,5 @@ bool Logout(ChatHandler* handler, std::string const& name);
 void List(ChatHandler* handler);
 void QueueStartupLogins();
 void Update(uint32 diff);
+void LogoutAllForShutdown();
 }
