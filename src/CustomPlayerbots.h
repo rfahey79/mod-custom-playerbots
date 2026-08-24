@@ -34,6 +34,7 @@ bool Create(ChatHandler* handler, CustomPlayerbotRequest const& request);
 bool Register(ChatHandler* handler, std::string const& name, bool autologin);
 bool SetAutologin(ChatHandler* handler, std::string const& name, bool enabled);
 bool SetAutonomous(ChatHandler* handler, std::string const& name, bool enabled);
+void SetAllAutonomous(ChatHandler* handler, bool enabled);
 bool Unregister(ChatHandler* handler, std::string const& name);
 bool Login(ChatHandler* handler, std::string const& name);
 bool Logout(ChatHandler* handler, std::string const& name);

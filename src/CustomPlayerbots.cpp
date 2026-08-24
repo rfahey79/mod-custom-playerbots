@@ -158,7 +158,7 @@ bool Create(ChatHandler* handler, CustomPlayerbotRequest const& request)
     bot->SetAtLoginFlag(AT_LOGIN_NONE);
     bot->SaveToDB(true, false);
     sCharacterCache->AddCharacterCacheEntry(bot->GetGUID(), request.accountId, bot->GetName(), bot->getGender(), bot->getRace(), bot->getClass(), bot->GetLevel());
-    CharacterDatabase.Execute("REPLACE INTO custom_playerbots (guid, account_id, autologin, autonomous) VALUES ({}, {}, {}, 0)", bot->GetGUID().GetCounter(), request.accountId, request.autologin ? 1 : 0);
+    CharacterDatabase.Execute("REPLACE INTO custom_playerbots (guid, account_id, autologin, autonomous) VALUES ({}, {}, {}, 1)", bot->GetGUID().GetCounter(), request.accountId, request.autologin ? 1 : 0);
     ObjectGuid guid = bot->GetGUID();
     bot->CleanupsBeforeDelete();
     handler->PSendSysMessage("Custom playerbot {} created (guid {}).", request.name, guid.GetCounter());
@@ -181,7 +181,7 @@ bool Register(ChatHandler* handler, std::string const& name, bool autologin)
 
     // The next admin command may be `.custombot login`, which immediately
     // reads the roster. Commit this one-row registration before confirming it.
-    CharacterDatabase.DirectExecute("INSERT INTO custom_playerbots (guid, account_id, autologin, autonomous) VALUES ({}, {}, {}, 0)", guid->GetCounter(), accountId, autologin ? 1 : 0);
+    CharacterDatabase.DirectExecute("INSERT INTO custom_playerbots (guid, account_id, autologin, autonomous) VALUES ({}, {}, {}, 1)", guid->GetCounter(), accountId, autologin ? 1 : 0);
     handler->PSendSysMessage("{} registered as a custom playerbot; autologin {}.", name, autologin ? "enabled" : "disabled");
     return true;
 }
@@ -198,13 +198,54 @@ bool SetAutonomous(ChatHandler* handler, std::string const& name, bool enabled)
     auto guid = FindGuid(name); if (!guid) { handler->PSendSysMessage("Character not found."); return false; }
     CharacterDatabase.DirectExecute("UPDATE custom_playerbots SET autonomous = {} WHERE guid = {}", enabled ? 1 : 0, guid->GetCounter());
     if (enabled)
-        autonomyActive.insert(*guid);
+        autonomyPending.insert(*guid);
     else
+    {
+        autonomyPending.erase(*guid);
         autonomyActive.erase(*guid);
+    }
     if (Player* bot = sRandomPlayerbotMgr.GetPlayerBot(*guid))
+    {
         ApplyAutonomousMode(bot, enabled);
+        if (enabled)
+            autonomyActive.insert(*guid);
+    }
     handler->PSendSysMessage("{} autonomous questing {}.", name, enabled ? "enabled" : "disabled");
     return true;
+}
+
+void SetAllAutonomous(ChatHandler* handler, bool enabled)
+{
+    CharacterDatabase.DirectExecute("UPDATE custom_playerbots SET autonomous = {}", enabled ? 1 : 0);
+    QueryResult rows = CharacterDatabase.Query("SELECT guid FROM custom_playerbots");
+    if (!rows)
+    {
+        handler->PSendSysMessage("Custom playerbot roster is empty.");
+        return;
+    }
+
+    uint32 changed = 0;
+    do
+    {
+        ObjectGuid guid(HighGuid::Player, rows->Fetch()[0].Get<uint32>());
+        if (enabled)
+            autonomyPending.insert(guid);
+        else
+        {
+            autonomyPending.erase(guid);
+            autonomyActive.erase(guid);
+        }
+
+        if (Player* bot = sRandomPlayerbotMgr.GetPlayerBot(guid))
+        {
+            ApplyAutonomousMode(bot, enabled);
+            if (enabled)
+                autonomyActive.insert(guid);
+        }
+        ++changed;
+    } while (rows->NextRow());
+
+    handler->PSendSysMessage("Autonomous questing {} for all {} custom playerbots.", enabled ? "enabled" : "disabled", changed);
 }
 
 bool Unregister(ChatHandler* handler, std::string const& name)

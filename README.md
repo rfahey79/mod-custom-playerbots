@@ -64,7 +64,7 @@ account create CustomBots01 YourStrongPassword
 .custombot login Name
 .custombot logout Name
 .custombot autologin Name on|off
-.custombot autonomous Name on|off
+.custombot autonomous Name|all on|off
 .custombot unregister Name
 ```
 
@@ -77,13 +77,14 @@ Examples:
 .custombot create Elowen nightelf female druid 60 CustomBots01 on skin=4 face=2 hairstyle=5 haircolor=3 facialhair=0
 .custombot register ExistingCharacter on
 .custombot autonomous Aldric on
+.custombot autonomous all on
 ```
 
 If appearance fields are omitted, the module selects valid values from the client's `CharSections.dbc`. Supplied skin/face, hairstyle/hair-color, and facial-hair values are checked against the selected race and gender before the character is created.
 
 `register` adds an existing character to the custom roster without changing its identity or progress. It rejects characters on Rndbot accounts. `unregister` logs a bot out and removes only its custom-roster entry; it never deletes the underlying character.
 
-`autonomous` is off by default. When enabled, the bot receives Playerbots' non-combat `new rpg` and `grind` strategies and has `follow` removed whenever it logs in. It will then independently seek level-appropriate quests and targets while preserving its own character identity and progress. The module reasserts this behavior when an autonomous bot is no longer in a group, preventing Playerbots from restoring its follow behavior. Disable it to restore ordinary companion behavior; a currently logged-in bot changes behavior immediately.
+Newly created and registered bots have `autonomous` enabled by default. When enabled, the bot receives Playerbots' non-combat `new rpg` and `grind` strategies and has `follow` removed whenever it logs in. It will then independently seek level-appropriate quests and targets while preserving its own character identity and progress. The module reasserts this behavior when an autonomous bot is no longer in a group, preventing Playerbots from restoring its follow behavior. Disable it to restore ordinary companion behavior; a currently logged-in bot changes behavior immediately. Use `autonomous all on|off` to change the entire roster at once.
 
 ## Startup and shutdown
 

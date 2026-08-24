@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS `custom_playerbots` (
   `guid` INT UNSIGNED NOT NULL,
   `account_id` INT UNSIGNED NOT NULL,
   `autologin` TINYINT UNSIGNED NOT NULL DEFAULT 1,
-  `autonomous` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  `autonomous` TINYINT UNSIGNED NOT NULL DEFAULT 1,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`guid`),
   KEY `idx_custom_playerbots_autologin` (`autologin`)
