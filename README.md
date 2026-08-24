@@ -50,7 +50,7 @@ CustomPlayerbots.AutoLoginBatchSize = 5
 Use a normal account for custom bots. Do not use an account whose name matches the Rndbot account prefix, and do not add it to Playerbots' random-account settings. Create it from the worldserver console or as a GM:
 
 ```text
-account create RydawgBots01 YourStrongPassword
+account create CustomBots01 YourStrongPassword
 ```
 
 ## Admin commands
@@ -69,8 +69,8 @@ account create RydawgBots01 YourStrongPassword
 Examples:
 
 ```text
-.custombot create Rydawg human male warrior 80 RydawgBots01 on
-.custombot create Kira nightelf female druid 60 RydawgBots01 on skin=4 face=2 hairstyle=5 haircolor=3 facialhair=0
+.custombot create Aldric human male warrior 80 CustomBots01 on
+.custombot create Elowen nightelf female druid 60 CustomBots01 on skin=4 face=2 hairstyle=5 haircolor=3 facialhair=0
 ```
 
 If appearance fields are omitted, the module selects valid values from the client's `CharSections.dbc`. Supplied skin/face, hairstyle/hair-color, and facial-hair values are checked against the selected race and gender before the character is created.
@@ -87,7 +87,7 @@ At startup, the worldserver reports a compact roster section:
  Loading persistent custom playerbot roster...
 ---------------------------------------
 >> 1 persistent custom playerbots queued for autologin
-1/1 custom bot Rydawg logged in.
+1/1 custom bot Aldric logged in.
 ```
 
 At shutdown, the module logs out and saves its roster bots before the server closes:
