@@ -1,0 +1,6 @@
+CU_SET_PATH("CMAKE_CUSTOM_PLAYERBOTS_DIR" "${CMAKE_CURRENT_LIST_DIR}")
+AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/CustomPlayerbots.cpp")
+AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/CustomPlayerbotsScripts.cpp")
+AC_ADD_SCRIPT("${CMAKE_CURRENT_LIST_DIR}/src/loader.cpp")
+AC_ADD_CONFIG_FILE("${CMAKE_CURRENT_LIST_DIR}/conf/mod_custom_playerbots.conf.dist")
+message("-- MOD-CUSTOM-PLAYERBOTS CONFIGURED --")

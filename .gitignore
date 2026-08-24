@@ -1,0 +1,16 @@
+# CMake and compiler output
+build/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Local AzerothCore configuration copy
+conf/mod_custom_playerbots.conf

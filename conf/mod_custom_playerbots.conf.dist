@@ -1,0 +1,10 @@
+# Persistent custom Altbots for the Playerbot-compatible AzerothCore branch.
+# These accounts must NOT use AiPlayerbot.RandomBotAccountPrefix.
+
+CustomPlayerbots.Enable = 1
+
+# Wait until world startup is fully settled before logging roster members in.
+CustomPlayerbots.AutoLoginDelayMs = 15000
+
+# Maximum roster bots whose login is started in a single world tick.
+CustomPlayerbots.AutoLoginBatchSize = 5
