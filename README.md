@@ -4,6 +4,8 @@
 
 Custom bots are **not Rndbots**. The module never adds their accounts to the random-bot account pool and never asks Playerbots to randomize their identity. Their name, race, gender, appearance, level, inventory, and normal character progress remain persistent.
 
+When I first started tinkering with Playerbots, I had an idea: what if I could resurrect old friends and guildmates who had long since moved on from the game? That idea became the foundation for Custom Playerbots—persistent, familiar characters that can once again help bring Azeroth to life.
+
 ## Requirements
 
 - A Playerbot-compatible AzerothCore core with `mod-playerbots` working.
