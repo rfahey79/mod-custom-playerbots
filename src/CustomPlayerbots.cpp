@@ -33,6 +33,8 @@ uint32 startupTimer = 0;
 uint32 startupTotal = 0;
 uint32 startupLogged = 0;
 std::unordered_set<ObjectGuid> autonomyPending;
+std::unordered_set<ObjectGuid> autonomyActive;
+uint32 autonomyTimer = 0;
 
 bool ValidRaceClass(uint8 race, uint8 playerClass)
 {
@@ -195,6 +197,10 @@ bool SetAutonomous(ChatHandler* handler, std::string const& name, bool enabled)
 {
     auto guid = FindGuid(name); if (!guid) { handler->PSendSysMessage("Character not found."); return false; }
     CharacterDatabase.DirectExecute("UPDATE custom_playerbots SET autonomous = {} WHERE guid = {}", enabled ? 1 : 0, guid->GetCounter());
+    if (enabled)
+        autonomyActive.insert(*guid);
+    else
+        autonomyActive.erase(*guid);
     if (Player* bot = sRandomPlayerbotMgr.GetPlayerBot(*guid))
         ApplyAutonomousMode(bot, enabled);
     handler->PSendSysMessage("{} autonomous questing {}.", name, enabled ? "enabled" : "disabled");
@@ -281,11 +287,32 @@ void Update(uint32 diff)
         if (Player* bot = sRandomPlayerbotMgr.GetPlayerBot(*it))
         {
             ApplyAutonomousMode(bot, true);
+            autonomyActive.insert(*it);
             LOG_INFO("module.custom_playerbots", "Custom bot {} entered autonomous questing mode.", bot->GetName());
             it = autonomyPending.erase(it);
         }
         else
             ++it;
+    }
+
+    // Playerbots may restore an Altbot's follow strategy when it leaves a
+    // group. Reassert autonomous behavior while the bot is ungrouped.
+    if (autonomyTimer > diff)
+        autonomyTimer -= diff;
+    else
+    {
+        autonomyTimer = 1000;
+        for (auto it = autonomyActive.begin(); it != autonomyActive.end();)
+        {
+            if (Player* bot = sRandomPlayerbotMgr.GetPlayerBot(*it))
+            {
+                if (!bot->GetGroup())
+                    ApplyAutonomousMode(bot, true);
+                ++it;
+            }
+            else
+                it = autonomyActive.erase(it);
+        }
     }
 
     if (startupQueue.empty()) return;

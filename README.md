@@ -83,7 +83,7 @@ If appearance fields are omitted, the module selects valid values from the clien
 
 `register` adds an existing character to the custom roster without changing its identity or progress. It rejects characters on Rndbot accounts. `unregister` logs a bot out and removes only its custom-roster entry; it never deletes the underlying character.
 
-`autonomous` is off by default. When enabled, the bot receives Playerbots' non-combat `new rpg` and `grind` strategies and has `follow` removed whenever it logs in. It will then independently seek level-appropriate quests and targets while preserving its own character identity and progress. Disable it to restore ordinary companion behavior; a currently logged-in bot changes behavior immediately.
+`autonomous` is off by default. When enabled, the bot receives Playerbots' non-combat `new rpg` and `grind` strategies and has `follow` removed whenever it logs in. It will then independently seek level-appropriate quests and targets while preserving its own character identity and progress. The module reasserts this behavior when an autonomous bot is no longer in a group, preventing Playerbots from restoring its follow behavior. Disable it to restore ordinary companion behavior; a currently logged-in bot changes behavior immediately.
 
 ## Startup and shutdown
 
