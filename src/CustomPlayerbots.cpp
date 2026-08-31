@@ -6,6 +6,7 @@
 #include "DatabaseEnv.h"
 #include "DBCStores.h"
 #include "GameTime.h"
+#include "Guild.h"
 #include "Log.h"
 #include "MotionMaster.h"
 #include "ObjectMgr.h"
@@ -15,13 +16,16 @@
 #include "PlayerbotAI.h"
 #include "PlayerbotMgr.h"
 #include "RandomPlayerbotMgr.h"
+#include "Random.h"
 #include "World.h"
 #include "WorldSession.h"
 
 #include <algorithm>
 #include <deque>
 #include <memory>
+#include <sstream>
 #include <set>
+#include <string_view>
 #include <unordered_set>
 
 namespace
@@ -35,6 +39,15 @@ uint32 startupLogged = 0;
 std::unordered_set<ObjectGuid> autonomyPending;
 std::unordered_set<ObjectGuid> autonomyActive;
 uint32 autonomyTimer = 0;
+
+struct PendingGuildGreeting
+{
+    ObjectGuid botGuid;
+    uint32 guildId;
+    uint32 remainingMs;
+    std::string message;
+};
+std::deque<PendingGuildGreeting> guildGreetingQueue;
 
 bool ValidRaceClass(uint8 race, uint8 playerClass)
 {
@@ -127,6 +140,28 @@ void QueueAutonomy(ObjectGuid guid)
 {
     if (IsAutonomous(guid))
         autonomyPending.insert(guid);
+}
+
+std::vector<std::string> GuildGreetingMessages()
+{
+    std::vector<std::string> messages;
+    std::stringstream stream(sConfigMgr->GetOption<std::string>("CustomPlayerbots.GuildGreeting.Messages", "Welcome back, {player}!|Good to see you, {player}!|{player} is back in action!"));
+    std::string message;
+    while (std::getline(stream, message, '|'))
+        if (!message.empty())
+            messages.push_back(message);
+    return messages;
+}
+
+void ReplacePlayerName(std::string& message, std::string const& playerName)
+{
+    constexpr std::string_view token = "{player}";
+    size_t position = 0;
+    while ((position = message.find(token, position)) != std::string::npos)
+    {
+        message.replace(position, token.size(), playerName);
+        position += playerName.size();
+    }
 }
 }
 
@@ -309,8 +344,61 @@ void QueueStartupLogins()
     LOG_INFO("server.loading", ">> {} persistent custom playerbots queued for autologin", startupQueue.size());
 }
 
+void QueueGuildGreeting(Player* player)
+{
+    if (!player || !player->GetSession() || player->GetSession()->IsBot() || !player->GetGuildId() ||
+        !sConfigMgr->GetOption<bool>("CustomPlayerbots.GuildGreeting.Enable", false))
+        return;
+
+    if (urand(1, 100) > sConfigMgr->GetOption<uint32>("CustomPlayerbots.GuildGreeting.Chance", 100))
+        return;
+
+    std::vector<Player*> candidates;
+    QueryResult rows = CharacterDatabase.Query("SELECT guid FROM custom_playerbots");
+    if (!rows)
+        return;
+
+    do
+    {
+        ObjectGuid guid(HighGuid::Player, rows->Fetch()[0].Get<uint32>());
+        if (Player* bot = sRandomPlayerbotMgr.GetPlayerBot(guid))
+            if (bot->GetGuildId() == player->GetGuildId() && bot->GetSession())
+                candidates.push_back(bot);
+    } while (rows->NextRow());
+
+    std::vector<std::string> messages = GuildGreetingMessages();
+    if (candidates.empty() || messages.empty())
+        return;
+
+    uint32 minimumDelay = sConfigMgr->GetOption<uint32>("CustomPlayerbots.GuildGreeting.MinDelayMs", 3000);
+    uint32 maximumDelay = sConfigMgr->GetOption<uint32>("CustomPlayerbots.GuildGreeting.MaxDelayMs", 9000);
+    if (maximumDelay < minimumDelay)
+        std::swap(minimumDelay, maximumDelay);
+
+    Player* bot = candidates[urand(0, candidates.size() - 1)];
+    std::string message = messages[urand(0, messages.size() - 1)];
+    ReplacePlayerName(message, player->GetName());
+    guildGreetingQueue.push_back({bot->GetGUID(), player->GetGuildId(), urand(minimumDelay, maximumDelay), std::move(message)});
+}
+
 void Update(uint32 diff)
 {
+    for (auto it = guildGreetingQueue.begin(); it != guildGreetingQueue.end();)
+    {
+        if (it->remainingMs > diff)
+        {
+            it->remainingMs -= diff;
+            ++it;
+            continue;
+        }
+
+        if (Player* bot = sRandomPlayerbotMgr.GetPlayerBot(it->botGuid))
+            if (bot->GetGuildId() == it->guildId)
+                if (Guild* guild = bot->GetGuild())
+                    guild->BroadcastToGuild(bot->GetSession(), false, it->message);
+        it = guildGreetingQueue.erase(it);
+    }
+
     for (auto it = startupPending.begin(); it != startupPending.end();)
     {
         if (sRandomPlayerbotMgr.GetPlayerBot(*it))

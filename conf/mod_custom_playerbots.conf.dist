@@ -13,3 +13,16 @@ CustomPlayerbots.AutoLoginBatchSize = 5
 # Existing bots retain their stored setting; use `.custombot autonomous all on|off`
 # to change an existing roster.
 CustomPlayerbots.AutonomousByDefault = 1
+
+# Let one online custom bot greet a real guild member when they log in.
+CustomPlayerbots.GuildGreeting.Enable = 0
+
+# Percentage chance that an eligible login receives a greeting.
+CustomPlayerbots.GuildGreeting.Chance = 100
+
+# Random delay before the greeting is sent, in milliseconds.
+CustomPlayerbots.GuildGreeting.MinDelayMs = 3000
+CustomPlayerbots.GuildGreeting.MaxDelayMs = 9000
+
+# Pipe-separated messages. Use {player} for the guild member's name.
+CustomPlayerbots.GuildGreeting.Messages = "Welcome back, {player}!|Good to see you, {player}!|{player} is back in action!"

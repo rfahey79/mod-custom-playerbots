@@ -48,6 +48,13 @@ CustomPlayerbots.AutoLoginBatchSize = 5
 
 # Whether newly created and registered bots start autonomous questing.
 CustomPlayerbots.AutonomousByDefault = 1
+
+# Allow one online custom bot to greet a real guild member at login.
+CustomPlayerbots.GuildGreeting.Enable = 0
+CustomPlayerbots.GuildGreeting.Chance = 100
+CustomPlayerbots.GuildGreeting.MinDelayMs = 3000
+CustomPlayerbots.GuildGreeting.MaxDelayMs = 9000
+CustomPlayerbots.GuildGreeting.Messages = "Welcome back, {player}!|Good to see you, {player}!|{player} is back in action!"
 ```
 
 ## Create a dedicated account
@@ -88,6 +95,10 @@ If appearance fields are omitted, the module selects valid values from the clien
 `register` adds an existing character to the custom roster without changing its identity or progress. It rejects characters on Rndbot accounts. `unregister` logs a bot out and removes only its custom-roster entry; it never deletes the underlying character.
 
 `CustomPlayerbots.AutonomousByDefault` controls whether newly created and registered bots have `autonomous` enabled; it defaults to `1`. Existing bots retain their stored setting. When enabled, the bot receives Playerbots' non-combat `new rpg` and `grind` strategies and has `follow` removed whenever it logs in. It will then independently seek level-appropriate quests and targets while preserving its own character identity and progress. The module reasserts this behavior when an autonomous bot is no longer in a group, preventing Playerbots from restoring its follow behavior. Disable it to restore ordinary companion behavior; a currently logged-in bot changes behavior immediately. Use `autonomous all on|off` to change the entire roster at once.
+
+## Guild greetings
+
+Set `CustomPlayerbots.GuildGreeting.Enable = 1` to let one online custom bot greet a real guild member when they log in. The bot and player must belong to the same guild. `Chance` controls how often it happens, the delay settings make the greeting feel natural, and `Messages` is a pipe-separated list that supports the `{player}` placeholder. Bots do not greet other bots.
 
 ## Startup and shutdown
 

@@ -3,6 +3,7 @@
 #include "Chat.h"
 #include "Config.h"
 #include "ScriptMgr.h"
+#include "PlayerScript.h"
 #include "WorldScript.h"
 
 #include <charconv>
@@ -46,5 +47,6 @@ public: custom_playerbots_commands() : CommandScript("custom_playerbots_commands
     static bool HandleAutonomous(ChatHandler* h, char const* a) { std::istringstream in{a};std::string n,v;if(!(in>>n>>v)){h->PSendSysMessage("Syntax: .custombot autonomous Name|all on|off");return true;}bool b;if(!ParseBool(v,b)){h->PSendSysMessage("Use on or off.");return true;}if(n=="all")CustomPlayerbots::SetAllAutonomous(h,b);else CustomPlayerbots::SetAutonomous(h,n,b);return true; }
 };
 class custom_playerbots_world : public WorldScript { public: custom_playerbots_world() : WorldScript("custom_playerbots_world") {} void OnStartup() override { CustomPlayerbots::QueueStartupLogins(); } void OnUpdate(uint32 diff) override { CustomPlayerbots::Update(diff); } void OnShutdown() override { CustomPlayerbots::LogoutAllForShutdown(); } };
+class custom_playerbots_guild_greetings : public PlayerScript { public: custom_playerbots_guild_greetings() : PlayerScript("custom_playerbots_guild_greetings", {PLAYERHOOK_ON_LOGIN}) {} void OnPlayerLogin(Player* player) override { CustomPlayerbots::QueueGuildGreeting(player); } };
 }
-void AddSC_mod_custom_playerbots() { new custom_playerbots_commands(); new custom_playerbots_world(); }
+void AddSC_mod_custom_playerbots() { new custom_playerbots_commands(); new custom_playerbots_world(); new custom_playerbots_guild_greetings(); }

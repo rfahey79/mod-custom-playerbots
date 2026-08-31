@@ -27,6 +27,7 @@ struct CustomPlayerbotRequest
 };
 
 class ChatHandler;
+class Player;
 
 namespace CustomPlayerbots
 {
@@ -40,6 +41,7 @@ bool Login(ChatHandler* handler, std::string const& name);
 bool Logout(ChatHandler* handler, std::string const& name);
 void List(ChatHandler* handler);
 void QueueStartupLogins();
+void QueueGuildGreeting(Player* player);
 void Update(uint32 diff);
 void LogoutAllForShutdown();
 }
