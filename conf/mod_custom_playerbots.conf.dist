@@ -24,5 +24,15 @@ CustomPlayerbots.GuildGreeting.Chance = 100
 CustomPlayerbots.GuildGreeting.MinDelayMs = 3000
 CustomPlayerbots.GuildGreeting.MaxDelayMs = 9000
 
-# Pipe-separated messages. Use {player} for the guild member's name.
+# Pipe-separated greetings for regular members. Use {player} for their name.
+# MemberMessages overrides this setting when supplied.
 CustomPlayerbots.GuildGreeting.Messages = "Welcome back, {player}!|Good to see you, {player}!|{player} is back in action!"
+
+# Guild ranks count upward from 0 (guildmaster). Ranks from 1 through this
+# value use OfficerMessages; all higher ranks use MemberMessages.
+CustomPlayerbots.GuildGreeting.OfficerMaxRank = 1
+
+# Rank-aware message pools. Leave MemberMessages blank to keep using Messages.
+CustomPlayerbots.GuildGreeting.LeaderMessages = "The boss is back: {player}!|Make way, {player} has returned.|The guildmaster has arrived. Try to look busy, {player}!"
+CustomPlayerbots.GuildGreeting.OfficerMessages = "Officer {player} is back. The paperwork can wait.|{player} is online—someone hide the guild bank keys.|Welcome back, {player}; leadership looks exhausting."
+CustomPlayerbots.GuildGreeting.MemberMessages = "Welcome back, {player}!|Good to see you, {player}!|{player} is back in action!"

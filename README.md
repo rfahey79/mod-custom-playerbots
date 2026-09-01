@@ -55,6 +55,10 @@ CustomPlayerbots.GuildGreeting.Chance = 100
 CustomPlayerbots.GuildGreeting.MinDelayMs = 3000
 CustomPlayerbots.GuildGreeting.MaxDelayMs = 9000
 CustomPlayerbots.GuildGreeting.Messages = "Welcome back, {player}!|Good to see you, {player}!|{player} is back in action!"
+CustomPlayerbots.GuildGreeting.OfficerMaxRank = 1
+CustomPlayerbots.GuildGreeting.LeaderMessages = "The boss is back: {player}!|Make way, {player} has returned.|The guildmaster has arrived. Try to look busy, {player}!"
+CustomPlayerbots.GuildGreeting.OfficerMessages = "Officer {player} is back. The paperwork can wait.|{player} is online—someone hide the guild bank keys.|Welcome back, {player}; leadership looks exhausting."
+CustomPlayerbots.GuildGreeting.MemberMessages = "Welcome back, {player}!|Good to see you, {player}!|{player} is back in action!"
 ```
 
 ## Create a dedicated account
@@ -98,7 +102,9 @@ If appearance fields are omitted, the module selects valid values from the clien
 
 ## Guild greetings
 
-Set `CustomPlayerbots.GuildGreeting.Enable = 1` to let one online custom bot greet a real guild member when they log in. The bot and player must belong to the same guild. `Chance` controls how often it happens, the delay settings make the greeting feel natural, and `Messages` is a pipe-separated list that supports the `{player}` placeholder. Bots do not greet other bots.
+Set `CustomPlayerbots.GuildGreeting.Enable = 1` to let one online custom bot greet a real guild member when they log in. The bot and player must belong to the same guild. Bots do not greet other bots.
+
+Greetings are rank-aware: guild rank `0` uses `LeaderMessages`; ranks `1` through `OfficerMaxRank` use `OfficerMessages`; higher ranks use `MemberMessages`. The defaults are deliberately a little quippy. All message settings are pipe-separated lists supporting the `{player}` placeholder. Set `MemberMessages` blank to continue using the original `Messages` setting for regular members. `Chance` controls how often it happens and the delay settings make the greeting feel natural.
 
 ## Startup and shutdown
 

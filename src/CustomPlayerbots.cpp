@@ -142,15 +142,30 @@ void QueueAutonomy(ObjectGuid guid)
         autonomyPending.insert(guid);
 }
 
-std::vector<std::string> GuildGreetingMessages()
+std::vector<std::string> SplitMessages(std::string const& configured)
 {
     std::vector<std::string> messages;
-    std::stringstream stream(sConfigMgr->GetOption<std::string>("CustomPlayerbots.GuildGreeting.Messages", "Welcome back, {player}!|Good to see you, {player}!|{player} is back in action!"));
+    std::stringstream stream(configured);
     std::string message;
     while (std::getline(stream, message, '|'))
         if (!message.empty())
             messages.push_back(message);
     return messages;
+}
+
+std::vector<std::string> GuildGreetingMessages(uint8 rankId)
+{
+    if (rankId == GR_GUILDMASTER)
+        return SplitMessages(sConfigMgr->GetOption<std::string>("CustomPlayerbots.GuildGreeting.LeaderMessages", "The boss is back: {player}!|Make way, {player} has returned.|The guildmaster has arrived. Try to look busy, {player}!"));
+
+    uint32 officerMaxRank = sConfigMgr->GetOption<uint32>("CustomPlayerbots.GuildGreeting.OfficerMaxRank", 1);
+    if (rankId <= officerMaxRank)
+        return SplitMessages(sConfigMgr->GetOption<std::string>("CustomPlayerbots.GuildGreeting.OfficerMessages", "Officer {player} is back. The paperwork can wait.|{player} is online—someone hide the guild bank keys.|Welcome back, {player}; leadership looks exhausting."));
+
+    std::string memberMessages = sConfigMgr->GetOption<std::string>("CustomPlayerbots.GuildGreeting.MemberMessages", "");
+    if (memberMessages.empty())
+        memberMessages = sConfigMgr->GetOption<std::string>("CustomPlayerbots.GuildGreeting.Messages", "Welcome back, {player}!|Good to see you, {player}!|{player} is back in action!");
+    return SplitMessages(memberMessages);
 }
 
 void ReplacePlayerName(std::string& message, std::string const& playerName)
@@ -366,7 +381,12 @@ void QueueGuildGreeting(Player* player)
                 candidates.push_back(bot);
     } while (rows->NextRow());
 
-    std::vector<std::string> messages = GuildGreetingMessages();
+    Guild* playerGuild = player->GetGuild();
+    Guild::Member const* member = playerGuild ? playerGuild->GetMember(player->GetGUID()) : nullptr;
+    if (!member)
+        return;
+
+    std::vector<std::string> messages = GuildGreetingMessages(member->GetRankId());
     if (candidates.empty() || messages.empty())
         return;
 
