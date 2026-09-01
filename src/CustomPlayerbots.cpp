@@ -401,6 +401,19 @@ void QueueGuildGreeting(Player* player)
     guildGreetingQueue.push_back({bot->GetGUID(), player->GetGuildId(), urand(minimumDelay, maximumDelay), std::move(message)});
 }
 
+bool ReloadConfig(ChatHandler* handler)
+{
+    if (!sConfigMgr->LoadModulesConfigs(true, false))
+    {
+        handler->PSendSysMessage("Unable to reload module configuration files. Check the worldserver log.");
+        return false;
+    }
+
+    guildGreetingQueue.clear();
+    handler->PSendSysMessage("Custom Playerbots configuration reloaded.");
+    return true;
+}
+
 void Update(uint32 diff)
 {
     for (auto it = guildGreetingQueue.begin(); it != guildGreetingQueue.end();)

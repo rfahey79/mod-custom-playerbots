@@ -39,6 +39,7 @@ void SetAllAutonomous(ChatHandler* handler, bool enabled);
 bool Unregister(ChatHandler* handler, std::string const& name);
 bool Login(ChatHandler* handler, std::string const& name);
 bool Logout(ChatHandler* handler, std::string const& name);
+bool ReloadConfig(ChatHandler* handler);
 void List(ChatHandler* handler);
 void QueueStartupLogins();
 void QueueGuildGreeting(Player* player);

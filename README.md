@@ -77,12 +77,15 @@ account create CustomBots01 YourStrongPassword
 .custombot list
 .custombot login Name
 .custombot logout Name
+.custombot reload
 .custombot autologin Name on|off
 .custombot autonomous Name|all on|off
 .custombot unregister Name
 ```
 
 `Race`, `Gender`, and `Class` accept readable WotLK names or their numeric IDs. `AutoLogin` accepts `on/off`, `true/false`, `yes/no`, or `1/0`.
+
+Use `.custombot reload` after editing the module configuration. It reloads module configuration files and immediately applies settings that Custom Playerbots reads dynamically, such as guild greeting messages, chances, and delays. Pending greetings are cleared so they cannot use stale settings. Server-start login settings apply on the next restart.
 
 Examples:
 
