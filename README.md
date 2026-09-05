@@ -18,11 +18,27 @@ From the root of the Playerbot-compatible AzerothCore checkout:
 
 ```bash
 git clone https://github.com/rfahey79/mod-custom-playerbots.git modules/mod-custom-playerbots
-mysql <characters_database> < modules/mod-custom-playerbots/data/sql/db-characters/base/custom_playerbots.sql
 ./acore.sh compiler build
 ```
 
-When updating an existing installation, apply `data/sql/db-characters/updates/2026_08_24_00_custom_playerbots_autonomous.sql` to the same characters database once before starting the updated server.
+Let worldserver's automatic database updater apply the module SQL at startup
+(character-database updates must be enabled). Do not manually import the module
+SQL when using automatic updates.
+
+The autonomous migration creates the roster table if missing and adds the
+`autonomous` column only if absent. Fresh installations default to `1`; existing
+pre-autonomous rosters are migrated with `0`, preserving opt-in behavior. Existing
+values and defaults are unchanged when the migration is reapplied.
+
+If startup previously failed with `Table '...custom_playerbots' doesn't exist`
+or `Duplicate column name 'autonomous'`, update this module and restart worldserver:
+
+```bash
+git -C modules/mod-custom-playerbots pull --ff-only
+```
+
+This SQL-only repair needs no C++ rebuild. Do not drop the roster table or edit
+the updater's tracking tables. The failed migration will be retried automatically.
 
 Copy `modules/mod-custom-playerbots/conf/mod_custom_playerbots.conf.dist` into the worldserver configuration directory and remove `.dist` from its name. The exact directory depends on the installation, but is commonly `env/dist/etc/`.
 
