@@ -369,7 +369,7 @@ void QueueStartupLogins()
 
 void QueueGuildGreeting(Player* player)
 {
-    if (!player || !player->GetSession() || player->GetSession()->IsBot() || !player->GetGuildId() ||
+    if (!player || !player->GetSession() || player->GetSession()->IsHeadless() || !player->GetGuildId() ||
         !sConfigMgr->GetOption<bool>("CustomPlayerbots.GuildGreeting.Enable", false))
         return;
 
