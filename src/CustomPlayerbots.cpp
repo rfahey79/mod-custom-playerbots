@@ -201,7 +201,7 @@ bool Create(ChatHandler* handler, CustomPlayerbotRequest const& request)
     Appearance appearance; std::string error;
     if (!SelectAppearance(request.race, request.gender, request.appearance, appearance, error)) { handler->PSendSysMessage(error); return false; }
 
-    WorldSession session(request.accountId, "", 0, nullptr, SEC_PLAYER, EXPANSION_WRATH_OF_THE_LICH_KING, time_t(0), LOCALE_enUS, 0, false, false, 0, true);
+    WorldSession session(request.accountId, "", 0, nullptr, SEC_PLAYER, EXPANSION_WRATH_OF_THE_LICH_KING, time_t(0), LOCALE_enUS, 0, false, false, 0);
     CharacterCreateInfo info(request.name, request.race, request.playerClass, request.gender, appearance.skin, appearance.face, appearance.hairStyle, appearance.hairColor, appearance.facialHair);
     std::unique_ptr<Player> bot(new Player(&session));
     bot->GetMotionMaster()->Initialize();
