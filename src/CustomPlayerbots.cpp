@@ -22,6 +22,7 @@
 
 #include <algorithm>
 #include <deque>
+#include <limits>
 #include <memory>
 #include <sstream>
 #include <set>
@@ -62,19 +63,25 @@ template <typename T> bool Contains(std::vector<T> const& values, T value)
 bool SelectAppearance(uint8 race, uint8 gender, CustomPlayerbotAppearance const& wanted, Appearance& output, std::string& error)
 {
     // CharSections.dbc is the authoritative client-valid appearance catalog.
-    // FACE Type + Color is the skin/face pair used by CharacterCreateInfo.
-    std::vector<std::pair<uint8, uint8>> facePairs, hairPairs;
-    std::vector<uint8> facialHair;
+    // FACE VariationIndex + ColorIndex is the face/skin pair used by CharacterCreateInfo.
+    std::vector<std::pair<uint32, uint32>> facePairs, hairPairs;
+    std::vector<uint32> facialHair;
     for (CharSectionsEntry const* section : sCharSectionsStore)
     {
-        if (section->Race != race || section->Gender != gender)
+        if (section->RaceID != race || section->SexID != gender)
             continue;
-        if (section->GenType == SECTION_TYPE_FACE)
-            facePairs.emplace_back(section->Type, section->Color);
-        else if (section->GenType == SECTION_TYPE_HAIR)
-            hairPairs.emplace_back(section->Type, section->Color);
-        else if (section->GenType == SECTION_TYPE_FACIAL_HAIR)
-            facialHair.push_back(section->Type);
+        // CharacterCreateInfo stores appearance values as bytes; reject out-of-range DBC values.
+        if (section->VariationIndex > std::numeric_limits<uint8>::max())
+            continue;
+        if ((section->BaseSection == SECTION_TYPE_FACE || section->BaseSection == SECTION_TYPE_HAIR)
+            && section->ColorIndex > std::numeric_limits<uint8>::max())
+            continue;
+        if (section->BaseSection == SECTION_TYPE_FACE)
+            facePairs.emplace_back(section->VariationIndex, section->ColorIndex);
+        else if (section->BaseSection == SECTION_TYPE_HAIR)
+            hairPairs.emplace_back(section->VariationIndex, section->ColorIndex);
+        else if (section->BaseSection == SECTION_TYPE_FACIAL_HAIR)
+            facialHair.push_back(section->VariationIndex);
     }
     if (facePairs.empty() || hairPairs.empty()) { error = "No appearance data exists for this race/gender."; return false; }
 
@@ -90,13 +97,14 @@ bool SelectAppearance(uint8 race, uint8 gender, CustomPlayerbotAppearance const&
     uint8 facial = 0;
     if (wanted.facialHair)
     {
-        if (!Contains(facialHair, *wanted.facialHair)) { error = "FacialHair is not valid for this race and gender."; return false; }
+        if (!Contains(facialHair, uint32(*wanted.facialHair))) { error = "FacialHair is not valid for this race and gender."; return false; }
         facial = *wanted.facialHair;
     }
     else if (!facialHair.empty())
-        facial = facialHair[urand(0, facialHair.size() - 1)];
+        facial = static_cast<uint8>(facialHair[urand(0, facialHair.size() - 1)]);
 
-    output = { faceIt->second, faceIt->first, hairIt->first, hairIt->second, facial };
+    output = { static_cast<uint8>(faceIt->second), static_cast<uint8>(faceIt->first),
+        static_cast<uint8>(hairIt->first), static_cast<uint8>(hairIt->second), facial };
     return true;
 }
 
